@@ -4,7 +4,7 @@ First verify that git is installed:
 ```
 git version
 ```
-If not see [the git instructions](https://github.com/git-guides/install-git)
+If it is not look at [the git instructions](https://github.com/git-guides/install-git)
 Then to clone the repo use:
 ```
 git clone https://github.com/axeldinh/DiffuserCam.git
