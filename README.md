@@ -1,3 +1,21 @@
+# Use Git
+
+First verify that git is installed:
+```
+git version
+```
+If not see [the git instructions](https://github.com/git-guides/install-git)
+To clone the repo then use:
+```
+git clone
+```
+Then when modifications have been made to some files, in order to update the github repo:
+```
+git add .
+git commit -m "Description of what has been done"
+git push
+```
+
 # DiffuserCam
 
 ### _Lensless imaging with a Raspberry Pi and a piece of tape!_
