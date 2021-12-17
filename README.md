@@ -5,15 +5,20 @@ First verify that git is installed:
 git version
 ```
 If not see [the git instructions](https://github.com/git-guides/install-git)
-To clone the repo then use:
+Then to clone the repo use:
 ```
-git clone
+git clone https://github.com/axeldinh/DiffuserCam.git
+cd DiffuserCam
 ```
 Then when modifications have been made to some files, in order to update the github repo:
 ```
 git add .
 git commit -m "Description of what has been done"
 git push
+```
+And to pull the modifications made by other users:
+```
+git pull
 ```
 
 # DiffuserCam
