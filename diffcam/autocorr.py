@@ -16,5 +16,10 @@ def autocorr2d(vals, pad_mode="reflect"):
     ------
     autocorr : py:class:`~numpy.ndarray`
     """
+    
+    n, m = vals.shape
+    vals = np.pad(vals, ((n//2, n//2), (m//2,m//2)), mode = pad_mode)
+    fft = np.fft.rfft2(vals)
+    auto_corr = np.fft.fftshift(np.fft.irfft2(abs(fft)**2))
 
-    return np.ones_like(vals)
+    return auto_corr[n//2:-n//2, m//2:-m//2]
