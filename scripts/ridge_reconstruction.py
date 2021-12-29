@@ -148,7 +148,7 @@ def reconstruction(
         H.compute_lipschitz_cst()
 
         l22_loss = 0.5 * SquaredL2Loss(dim = H.shape[0], data = data.flatten())
-        lambda_ = 1e-5
+        lambda_ = 1e-1
         F = l22_loss * H + lambda_ * SquaredL2Norm(dim = data.size)
     
     else:
@@ -174,7 +174,7 @@ def reconstruction(
     start_time = time.time()
     # TODO : apply your reconstruction
     
-    apgd = APGD(dim = data.size, F=F, acceleration='CD', max_iter = n_iter)
+    apgd = APGD(dim = data.size, F=F, acceleration='CD', max_iter = n_iter, accuracy_threshold=1e-5)
     estimate, _, _ = apgd.iterate()
     print(f"proc time : {time.time() - start_time} s")
     

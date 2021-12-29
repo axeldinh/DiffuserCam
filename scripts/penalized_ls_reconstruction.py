@@ -17,14 +17,14 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 import numpy as np
-from PIL import Image
 from diffcam.io import load_data
 from diffcam.plot import plot_image
-from pycsou.opt.proxalgs import APGD
+from pycsou.opt.proxalgs import PDS
 from pycsou.func.loss import SquaredL2Loss
-from pycsou.func.penalty import NonNegativeOrthant
-from pycsou.func import ProxFuncHStack, DiffFuncHStack
+from pycsou.func.penalty import L1Norm, NonNegativeOrthant
+from pycsou.linop.diff import Gradient
 from pycsou.linop.conv import Convolve2D
+from pycsou.func import DiffFuncHStack, ProxFuncHStack
 
 @click.command()
 @click.option(
@@ -136,54 +136,67 @@ def reconstruction(
     if save:
         save = os.path.basename(data_fp).split(".")[0]
         timestamp = datetime.now().strftime("_%d%m%d%Y_%Hh%M")
-        save = "NON_NEG_LS_RECONSTRUCTION_" + save + timestamp
+        save = "PENALIZED_LS_RECONSTRUCTION_" + save + timestamp
         save = plib.Path(__file__).parent / save
         save.mkdir(exist_ok=False)
 
     start_time = time.time()
     # TODO : setup for your reconstruction algorithm
-    
+    #n, m = psf.shape
     if gray:
-        H = Convolve2D(size = data.size, filter = psf, shape = data.shape)
-        H.compute_lipschitz_cst()
         
-        l22_loss = 0.5 * SquaredL2Loss(dim = H.shape[0], data = data.flatten())
-        F = l22_loss * H
+        conv = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
+        conv.compute_lipschitz_cst()
+
+        l22_loss = 0.5 * SquaredL2Loss(dim = conv.shape[0], data = data.flatten())
+        F = l22_loss * conv
+                
+        D = Gradient(shape = data.shape)
+        D.compute_lipschitz_cst()
         lambda_ = 1e-1
-        G = lambda_ * NonNegativeOrthant(dim = data.size)
+        H = lambda_ * L1Norm(dim = D.shape[0])
+        G = NonNegativeOrthant(dim = data.size)
         
-    else:
+        
     
-        H1 = Convolve2D(size = data[:,:,0].size, filter = psf[:,:,0], shape = data[:,:,0].shape)
-        H1.compute_lipschitz_cst()
-        loss1 = 0.5 * SquaredL2Loss(dim = H1.shape[0], data = data[:,:,0].flatten()) * H1
+    else:
         
-        H2 = Convolve2D(size = data[:,:,1].size, filter = psf[:,:,1], shape = data[:,:,1].shape)
-        H2.compute_lipschitz_cst()
-        loss2 = 0.5 * SquaredL2Loss(dim = H2.shape[0], data = data[:,:,1].flatten()) * H2
+        conv1 = Convolve2D(size = data[:,:,0].size, filter = psf[:,:,0], shape = data[:,:,0].shape)
+        conv1.compute_lipschitz_cst()
+        loss1 = 0.5 * SquaredL2Loss(dim = conv1.shape[0], data = data[:,:,0].flatten()) * conv1
         
-        H3 = Convolve2D(size = data[:,:,2].size, filter = psf[:,:,2], shape = data[:,:,2].shape)
-        H3.compute_lipschitz_cst()
-        loss3 = 0.5 * SquaredL2Loss(dim = H3.shape[0], data = data[:,:,2].flatten()) * H3
+        conv2 = Convolve2D(size = data[:,:,1].size, filter = psf[:,:,1], shape = data[:,:,1].shape)
+        conv2.compute_lipschitz_cst()
+        loss2 = 0.5 * SquaredL2Loss(dim = conv2.shape[0], data = data[:,:,1].flatten()) * conv2
+        
+        conv3 = Convolve2D(size = data[:,:,2].size, filter = psf[:,:,2], shape = data[:,:,2].shape)
+        conv3.compute_lipschitz_cst()
+        loss3 = 0.5 * SquaredL2Loss(dim = conv3.shape[0], data = data[:,:,2].flatten()) * conv3
         
         F = DiffFuncHStack(loss1, loss2, loss3)
         
+        D = Gradient(shape = data.shape)
+        D.compute_lipschitz_cst()
         lambda_ = 1e-1
-        G = lambda_ * ProxFuncHStack(NonNegativeOrthant(dim = data[:,:,0].size), NonNegativeOrthant(dim = data[:,:,1].size), NonNegativeOrthant(dim = data[:,:,2].size))
-
+        H = lambda_ * L1Norm(dim=D.shape[0])
+        G = NonNegativeOrthant(dim = data.size)
+                                            
+        
+        
     
     print(f"setup time : {time.time() - start_time} s")
 
     start_time = time.time()
     # TODO : apply your reconstruction
-    apgd = APGD(dim = data.size, F=F, G=G, acceleration='CD', max_iter = n_iter, accuracy_threshold=1e-5)
-    estimate, _, _ = apgd.iterate()
+    
+    pds = PDS(dim = data.size, F=F, G=G, H=H, K=D, max_iter = n_iter, accuracy_threshold  = 1e-5)
+    estimate, _, _ = pds.iterate()
     print(f"proc time : {time.time() - start_time} s")
     
     if gray:
-        result = estimate['iterand'].reshape(data.shape)
+        result = estimate['primal_variable'].reshape(data.shape)
     else:
-        result = estimate['iterand']
+        result = estimate['primal_variable']
         n, m = data[:,:,0].shape
         result = result.reshape((3*n, m))
         result = np.concatenate(
@@ -192,13 +205,12 @@ def reconstruction(
     if not no_plot:
         ax = plot_image(result, gamma = gamma)
         plt.show()
-        #plt.clf()
+        plt.clf()
     if save:
         ax = plot_image(result, gamma = gamma)
         plt.savefig(str(save) + "/" + data_fp.split("/")[-1], bbox_inches= "tight", format="png")
         plt.clf()
         print(f"Files saved to : {save}")
-
 
 
 if __name__ == "__main__":
