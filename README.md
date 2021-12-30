@@ -38,7 +38,7 @@ It is also possible to use:
 ```
 python scripts/ridge_myDataset.py --data myDataset --load
 ```
-Here the the metrics are directly computed on the pre-computed images reconstructions. We recommend to use this option.
+Here the the metrics are directly computed on the pre-computed images reconstructions. We recommend to use this option. Nevertheless, the time taken to reconstruct the images will not be given.
 
 The returned metrics are:
   - The MSE.
