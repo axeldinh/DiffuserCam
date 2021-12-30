@@ -144,26 +144,26 @@ def reconstruction(
     
     if gray:
         
-        H = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
-        H.compute_lipschitz_cst()
+        conv = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
+        conv.compute_lipschitz_cst()
 
-        l22_loss = 0.5 * SquaredL2Loss(dim = H.shape[0], data = data.flatten())
+        l22_loss = 0.5 * SquaredL2Loss(dim = conv.shape[0], data = data.flatten())
         lambda_ = 1e-1
-        F = l22_loss * H + lambda_ * SquaredL2Norm(dim = data.size)
+        F = l22_loss * conv + lambda_ * SquaredL2Norm(dim = data.size)
     
     else:
         
-        H1 = Convolve2D(size = data[:,:,0].size, filter = psf[:,:,0], shape = data[:,:,0].shape)
-        H1.compute_lipschitz_cst()
-        loss1 = 0.5 * SquaredL2Loss(dim = H1.shape[0], data = data[:,:,0].flatten()) * H1
+        conv1 = Convolve2D(size = data[:,:,0].size, filter = psf[:,:,0], shape = data[:,:,0].shape)
+        conv1.compute_lipschitz_cst()
+        loss1 = 0.5 * SquaredL2Loss(dim = conv1.shape[0], data = data[:,:,0].flatten()) * conv1
         
-        H2 = Convolve2D(size = data[:,:,1].size, filter = psf[:,:,1], shape = data[:,:,1].shape)
-        H2.compute_lipschitz_cst()
-        loss2 = 0.5 * SquaredL2Loss(dim = H2.shape[0], data = data[:,:,1].flatten()) * H2
+        conv2 = Convolve2D(size = data[:,:,1].size, filter = psf[:,:,1], shape = data[:,:,1].shape)
+        conv2.compute_lipschitz_cst()
+        loss2 = 0.5 * SquaredL2Loss(dim = conv2.shape[0], data = data[:,:,1].flatten()) * conv2
         
-        H3 = Convolve2D(size = data[:,:,2].size, filter = psf[:,:,2], shape = data[:,:,2].shape)
-        H3.compute_lipschitz_cst()
-        loss3 = 0.5 * SquaredL2Loss(dim = H3.shape[0], data = data[:,:,2].flatten()) * H3
+        conv3 = Convolve2D(size = data[:,:,2].size, filter = psf[:,:,2], shape = data[:,:,2].shape)
+        conv3.compute_lipschitz_cst()
+        loss3 = 0.5 * SquaredL2Loss(dim = conv3.shape[0], data = data[:,:,2].flatten()) * conv3
         
         lambda_ = 1e-1
         F = DiffFuncHStack(loss1, loss2, loss3) + lambda_ * SquaredL2Norm(dim = data.size)
