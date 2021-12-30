@@ -154,38 +154,62 @@ def reconstruction(
     # TODO : setup for your reconstruction algorithm
     #n, m = psf.shape
     if gray:
-        Gop = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
-        Gop.compute_lipschitz_cst()
+        conv = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
+        conv.compute_lipschitz_cst()
 
-        l22_loss = 0.5 * SquaredL2Loss(dim = Gop.shape[0], data = data.flatten())
-        F = l22_loss * Gop
+        l22_loss = 0.5 * SquaredL2Loss(dim = conv.shape[0], data = data.flatten())
+        F = l22_loss * conv
         
         D = DCT(size = data.size)
         D.compute_lipschitz_cst()
         
-        lambda_ = 1e-5 
+        lambda_ = 1e-1
         H  = lambda_ * L1Norm(dim = D.shape[0])
         
     else:
         
-        print(f"not implemented")
-    
+        conv1 = Convolve2D(size = data[:,:,0].size, filter = psf[:,:,0], shape = data[:,:,0].shape)
+        conv1.compute_lipschitz_cst()
+        loss1 = 0.5 * SquaredL2Loss(dim = conv1.shape[0], data = data[:,:,0].flatten()) * conv1
+        
+        conv2 = Convolve2D(size = data[:,:,1].size, filter = psf[:,:,1], shape = data[:,:,1].shape)
+        conv2.compute_lipschitz_cst()
+        loss2 = 0.5 * SquaredL2Loss(dim = conv2.shape[0], data = data[:,:,1].flatten()) * conv2
+        
+        conv3 = Convolve2D(size = data[:,:,2].size, filter = psf[:,:,2], shape = data[:,:,2].shape)
+        conv3.compute_lipschitz_cst()
+        loss3 = 0.5 * SquaredL2Loss(dim = conv3.shape[0], data = data[:,:,2].flatten()) * conv3
+        
+        lambda_ = 1e-1
+        F = DiffFuncHStack(loss1, loss2, loss3)
+        
+        D = DCT(size = data.size)
+        D.compute_lipschitz_cst()
+        
+        lambda_ = 1e-1
+        H  = lambda_ * L1Norm(dim = D.shape[0])
+        
+        
+        
+            
     print(f"setup time : {time.time() - start_time} s")
 
     start_time = time.time()
     # TODO : apply your reconstruction
-    if gray:
-        pds = PrimalDualSplitting(dim=Gop.shape[1], F=F, G=None, H=H, K=D, verbose=None, max_iter = n_iter)
-        estimate, _, _ = pds.iterate()
-    
-    else:
-        print(f"not implemented")
+    pds = PrimalDualSplitting(dim=data.size, F=F, G=None, H=H, K=D, verbose=None, max_iter = n_iter)
+    estimate, _, _ = pds.iterate()
     print(f"proc time : {time.time() - start_time} s")
     
     if gray:
         result = estimate['primal_variable'].reshape(data.shape)
     else:
-        print(f"not implemented")
+        result = estimate['primal_variable']
+        n, m = data[:,:,0].shape
+        result = result.reshape((3*n, m))
+        result = np.concatenate(
+            [result[:n, :, None], result[n:2*n, :,None], result[2*n:, :, None]], axis = -1)
+    
+    result = (result-np.min(result)) / (np.max(result) - np.min(result))
 
     if not no_plot:
         ax = plot_image(result, gamma = gamma)
