@@ -7,6 +7,39 @@ from diffcam.constants import RPI_HQ_CAMERA_CCM_MATRIX, RPI_HQ_CAMERA_BLACK_LEVE
 SUPPORTED_BIT_DEPTH = np.array([8, 10, 12, 16])
 FLOAT_DTYPES = [np.float32, np.float64]
 
+def resize_to(true: np.ndarray, est: np.ndarray) -> np.ndarray:
+    """
+    Resizes true to the size of est.
+
+    Args:
+        true (np.ndarray): Array to resize
+        est (np.ndarray): Array from which to copy the shape
+
+    Returns:
+        [np.ndarray]: Reshaped array
+    """
+    return cv2.resize(true, dsize=tuple(np.shape(est)[1::-1]), interpolation=cv2.INTER_CUBIC)
+
+def crop_reconstruction(result: np.ndarray, img_n: int) -> np.ndarray:
+    """
+    Returns a cropped version of the reconstronction array to match the original image.
+
+    Args:
+        true (np.ndarray): Array to resize
+        img_n (int): Index of the image to crop.
+
+    Returns:
+        [np.ndarray]: Cropped reconstruction.
+    """
+    img1 = range(249, 331)
+    img2 = range(214, 366)
+    img3 = range(210, 370)
+    img4 = range(249, 331)
+    img5 = range(231, 349)
+    crops = [img1, img2, img3, img4, img5]
+    
+    return result[102:220, crops[img_n-1]]
+
 
 def resize(img, factor, interpolation=cv2.INTER_CUBIC):
     """

@@ -30,8 +30,9 @@ from pycsou.opt.proxalgs import APGD
 from pycsou.func.loss import SquaredL2Loss
 from pycsou.func.penalty import NonNegativeOrthant
 from pycsou.linop.conv import Convolve2D
-
 from pycsou.func import DiffFuncHStack
+
+from diffcam.util import resize_to, crop_reconstruction
 
 @click.command()
 @click.option(
@@ -172,10 +173,14 @@ def huber_myDataset(data, n_iter, gray, save, load):
         true = load_image(true_fn)
         print("\nComputing the metrics...")
         
-        #### PUT CODE FOR METRICS HERE
-        # crop(result, filename)
-        # mse_scores(mse(true, result))
-        # psnr_scores(psnr(true, result))
+        # Compute the metrics
+        img_n = int(str(bn).split(".")[0].replace("img", ""))
+        crop_result = crop_reconstruction(result, img_n)
+        true = resize_to(true, crop_result)
+        mse_scores.append(mse(true, crop_result))
+        psnr_scores.append(psnr(true, crop_result))
+        ssim_scores.append(ssim(true, crop_result))
+        lpips_scores.append(lpips(true, crop_result))
             
 
     if save:
