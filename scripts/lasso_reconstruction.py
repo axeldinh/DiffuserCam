@@ -168,7 +168,7 @@ def reconstruction(
         loss3 = 0.5 * SquaredL2Loss(dim = H3.shape[0], data = data[:,:,2].flatten()) * H3
         
         F = DiffFuncHStack(loss1, loss2, loss3)
-        lambda_ = 1e-5
+        lambda_ = 1e-1
         G = lambda_ * ProxFuncHStack(L1Norm(dim = data[:,:,0].size), L1Norm(dim = data[:,:,1].size), L1Norm(dim = data[:,:,2].size))
         
 
@@ -189,6 +189,8 @@ def reconstruction(
         result = result.reshape((3*n, m))
         result = np.concatenate(
             [result[:n, :, None], result[n:2*n, :,None], result[2*n:, :, None]], axis = -1)
+    
+    result = (result-np.min(result)) / (np.max(result) - np.min(result))
 
     if not no_plot:
         ax = plot_image(result, gamma = gamma)

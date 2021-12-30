@@ -3,8 +3,8 @@ This script will load the PSF data and raw measurement for the reconstruction
 that can implement afterwards.
 
 ```bash
-python scripts/reconstruction_template.py --psf_fp data/psf/diffcam_rgb.png \
---data_fp data/raw_data/thumbs_up_rgb.png
+python scripts/reconstruction_template.py --psf_fp data/psf/psf4.png.png \
+--data_fp data/raw_data/cat_raw.jpg
 ```
 
 """
@@ -149,8 +149,7 @@ def reconstruction(
         
         l22_loss = 0.5 * SquaredL2Loss(dim = H.shape[0], data = data.flatten())
         F = l22_loss * H
-        lambda_ = 1e-1
-        G = lambda_ * NonNegativeOrthant(dim = data.size)
+        G = NonNegativeOrthant(dim = data.size)
         
     else:
     
@@ -168,8 +167,7 @@ def reconstruction(
         
         F = DiffFuncHStack(loss1, loss2, loss3)
         
-        lambda_ = 1e-1
-        G = lambda_ * ProxFuncHStack(NonNegativeOrthant(dim = data[:,:,0].size), NonNegativeOrthant(dim = data[:,:,1].size), NonNegativeOrthant(dim = data[:,:,2].size))
+        G = ProxFuncHStack(NonNegativeOrthant(dim = data[:,:,0].size), NonNegativeOrthant(dim = data[:,:,1].size), NonNegativeOrthant(dim = data[:,:,2].size))
 
     
     print(f"setup time : {time.time() - start_time} s")
@@ -188,6 +186,8 @@ def reconstruction(
         result = result.reshape((3*n, m))
         result = np.concatenate(
             [result[:n, :, None], result[n:2*n, :,None], result[2*n:, :, None]], axis = -1)
+    
+    result = (result-np.min(result)) / (np.max(result) - np.min(result))
 
     if not no_plot:
         ax = plot_image(result, gamma = gamma)

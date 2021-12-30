@@ -141,7 +141,7 @@ def reconstruction(
 
     start_time = time.time()
     # TODO : setup for your reconstruction algorithm
-    #n, m = psf.shape
+    
     if gray:
         
         H = Convolve2D(size = psf.size, filter = psf, shape = psf.shape)
@@ -186,6 +186,8 @@ def reconstruction(
         result = result.reshape((3*n, m))
         result = np.concatenate(
             [result[:n, :, None], result[n:2*n, :,None], result[2*n:, :, None]], axis = -1)
+    
+    result = (result-np.min(result)) / (np.max(result) - np.min(result))
 
     if not no_plot:
         ax = plot_image(result, gamma = gamma)
@@ -196,6 +198,8 @@ def reconstruction(
         plt.savefig(str(save) + "/" + data_fp.split("/")[-1], bbox_inches= "tight", format="png")
         plt.clf()
         print(f"Files saved to : {save}")
+        
+    return result
 
 
 if __name__ == "__main__":

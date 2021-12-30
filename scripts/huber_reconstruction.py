@@ -1,10 +1,10 @@
 """
 This script will load the PSF data and raw measurement for the reconstruction
-that can implement afterwards.
+using the non negative Huber normed problem.
 
 ```bash
-python scripts/reconstruction_template.py --psf_fp data/psf/diffcam_rgb.png \
---data_fp data/raw_data/thumbs_up_rgb.png
+python scripts/huber_reconstruction.py --psf_fp data/psf/psf4.png \
+--data_fp data/raw_data/cat_raw.jpg
 ```
 
 """
@@ -205,6 +205,8 @@ def reconstruction(
         result = result.reshape((3*n, m))
         result = np.concatenate(
             [result[:n, :, None], result[n:2*n, :,None], result[2*n:, :, None]], axis = -1)
+    
+    result = (result-np.min(result)) / (np.max(result) - np.min(result))
 
     if not no_plot:
         ax = plot_image(result, gamma = gamma)
