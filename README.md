@@ -4,7 +4,11 @@
 
 <br>
 
-We provide different ways to recover images taken from a lensless camera. 
+We provide in this project different ways to recover images taken from a lensless camera.
+For more information about the setup and requirements please refer to the Setup section of the [DiffuserCam](https://github.com/LCAV/DiffuserCam) repository.
+
+# Data
+
 We created a mini dataset of 5 images, here is an example:
 
 <img src="myDataset/original/img1.jpg" width="100"> <img src="myDataset/original/img2.png" width="185"> 
@@ -12,7 +16,11 @@ We created a mini dataset of 5 images, here is an example:
 
 One of the images could not be shown because of its format (".tif").
 
-Those results can be made using the following files:
+Those images are stored in the **myDataset/original** folder. One can also find the measurements made using those same images in **myDataset/raw_data** and the Point Spread Function measurements as the **myDataset/psf.png** file.
+
+# Scripts
+
+The results can be reproduced using the following files:
 
 - **ridge_myDataset.py**
 - **lasso_myDataset.py**
@@ -24,7 +32,7 @@ For each of those files it is possible to recover the evaluation of the method b
 ```
 python scripts/ridge_myDataset.py --data myDataset --save
 ```
-Doing so all the reconstructions will be made and saved, this can quite long as 500 iterations are performed for APGD and 5000 for PDS algortihms.
+Doing so all the reconstructions will be made and saved, this can be quite long as 500 iterations are performed for Accelerated Proximal Gradient Descent and 5000 for the Primal-Dual Splitting method.
 
 It is also possible to use:
 ```
@@ -40,4 +48,6 @@ The returned metrics are:
 
 Their implementations can be found in diffcam/metric.py
 
-Furthermore, notice that the code for the Discrete Cosine Transform method is not implemented using the required change of variable, hence it uses the PDS algorithm. Also note that it does not have a corresponding python script to compute the metrics on their reconstructions. 
+# ISSUES
+
+Notice that the code for the Discrete Cosine Transform method is not implemented using the required change of variable, hence it uses the PDS algorithm. Also note that it does not have a corresponding python script to compute the metrics on their reconstructions. 
