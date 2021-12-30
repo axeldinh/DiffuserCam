@@ -1,8 +1,11 @@
 # DiffuserCam Project (COM-514)
 
-##### Axel Dinh Van Chi, Daniel Suter, Stasa Kostic, Andjela Kostic.
+Team members:
+ - Axel Dinh Van Chi
+-  Daniel Suter
+-  Stasa Kostic
+-  Andjela Kostic
 
-<br>
 
 We provide in this project different ways to recover images taken from a lensless camera.
 For more information about the setup and requirements please refer to the Setup section of the [DiffuserCam](https://github.com/LCAV/DiffuserCam) repository.
