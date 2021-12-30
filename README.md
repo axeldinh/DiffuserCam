@@ -26,7 +26,7 @@ The results can be reproduced using the following files:
 - **lasso_myDataset.py**
 - **non_neg_ls_myDataset.py** 
 - **penalized_ls_myDataset.py**
-- **huber_ridge_myDataset.py**
+- **huber_myDataset.py**
 
 For each of those files it is possible to recover the evaluation of the method by calling (we use one particular file for the example here):
 ```
